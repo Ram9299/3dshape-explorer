@@ -42,13 +42,15 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
     // Controls setup
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.enableZoom = true;
     controlsRef.current = controls;
 
     // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040);
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
     directionalLight.position.set(1, 1, 1);
     scene.add(directionalLight);
 
@@ -71,29 +73,56 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
   useEffect(() => {
     if (!stlUrl || !sceneRef.current) return;
 
+    console.log('Loading STL from URL:', stlUrl);
+
     const loader = new STLLoader();
-    loader.load(stlUrl, (geometry) => {
-      if (meshRef.current) {
-        sceneRef.current?.remove(meshRef.current);
+    loader.load(
+      stlUrl,
+      (geometry) => {
+        console.log('STL loaded successfully');
+        
+        if (meshRef.current) {
+          sceneRef.current?.remove(meshRef.current);
+        }
+
+        const material = new THREE.MeshPhongMaterial({
+          color: 0x00a8ff,
+          specular: 0x111111,
+          shininess: 200,
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Center the model
+        geometry.computeBoundingBox();
+        const boundingBox = geometry.boundingBox;
+        if (boundingBox) {
+          const center = new THREE.Vector3();
+          boundingBox.getCenter(center);
+          geometry.center();
+
+          // Adjust camera to fit model
+          const size = new THREE.Vector3();
+          boundingBox.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = cameraRef.current?.fov || 75;
+          const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+          
+          if (cameraRef.current) {
+            cameraRef.current.position.z = cameraDistance * 1.5;
+            cameraRef.current.updateProjectionMatrix();
+          }
+        }
+
+        sceneRef.current?.add(mesh);
+        meshRef.current = mesh;
+      },
+      (xhr) => {
+        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+      },
+      (error) => {
+        console.error('Error loading STL:', error);
       }
-
-      const material = new THREE.MeshPhongMaterial({
-        color: 0x00a8ff,
-        specular: 0x111111,
-        shininess: 200,
-      });
-      const mesh = new THREE.Mesh(geometry, material);
-
-      // Center the model
-      geometry.computeBoundingBox();
-      const center = new THREE.Vector3();
-      geometry.boundingBox?.getCenter(center);
-      geometry.center();
-      mesh.position.copy(center);
-
-      sceneRef.current?.add(mesh);
-      meshRef.current = mesh;
-    });
+    );
   }, [stlUrl]);
 
   // Handle window resize
