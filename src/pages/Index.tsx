@@ -6,20 +6,20 @@ import { toast } from 'sonner';
 
 const SAMPLE_MODELS = [
   {
-    name: 'Gear',
-    url: 'https://www.ricos.co.jp/files2/gear.stl'
+    name: 'Cube',
+    url: 'https://storage.googleapis.com/ucloud-v3/ccab50f18fb14c91ccca300a.stl'
   },
   {
-    name: 'V6 Engine',
-    url: 'https://www.ricos.co.jp/files2/v6engine.stl'
+    name: 'Sphere',
+    url: 'https://storage.googleapis.com/ucloud-v3/6cc1b1f18fb14c91ccca300a.stl'
   },
   {
-    name: 'Drill',
-    url: 'https://www.ricos.co.jp/files2/drill.stl'
+    name: 'Cylinder',
+    url: 'https://storage.googleapis.com/ucloud-v3/7cc2b2f18fb14c91ccca300a.stl'
   },
   {
-    name: 'Connecting Rod',
-    url: 'https://www.ricos.co.jp/files2/conrod.stl'
+    name: 'Torus',
+    url: 'https://storage.googleapis.com/ucloud-v3/8cc3b3f18fb14c91ccca300a.stl'
   }
 ];
 
