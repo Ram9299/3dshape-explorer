@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { toast } from 'sonner';
 
 interface ThreeViewerProps {
   stlUrl?: string;
@@ -14,6 +15,7 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
   const rendererRef = useRef<THREE.WebGLRenderer>();
   const controlsRef = useRef<OrbitControls>();
   const meshRef = useRef<THREE.Mesh>();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -65,7 +67,9 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
     // Cleanup
     return () => {
       renderer.dispose();
-      mountRef.current?.removeChild(renderer.domElement);
+      if (mountRef.current?.contains(renderer.domElement)) {
+        mountRef.current.removeChild(renderer.domElement);
+      }
     };
   }, []);
 
@@ -73,56 +77,68 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
   useEffect(() => {
     if (!stlUrl || !sceneRef.current) return;
 
+    setIsLoading(true);
     console.log('Loading STL from URL:', stlUrl);
 
     const loader = new STLLoader();
-    loader.load(
-      stlUrl,
-      (geometry) => {
-        console.log('STL loaded successfully');
-        
-        if (meshRef.current) {
-          sceneRef.current?.remove(meshRef.current);
-        }
-
-        const material = new THREE.MeshPhongMaterial({
-          color: 0x00a8ff,
-          specular: 0x111111,
-          shininess: 200,
-        });
-        const mesh = new THREE.Mesh(geometry, material);
-
-        // Center the model
-        geometry.computeBoundingBox();
-        const boundingBox = geometry.boundingBox;
-        if (boundingBox) {
-          const center = new THREE.Vector3();
-          boundingBox.getCenter(center);
-          geometry.center();
-
-          // Adjust camera to fit model
-          const size = new THREE.Vector3();
-          boundingBox.getSize(size);
-          const maxDim = Math.max(size.x, size.y, size.z);
-          const fov = cameraRef.current?.fov || 75;
-          const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+    
+    try {
+      loader.load(
+        stlUrl,
+        (geometry) => {
+          console.log('STL loaded successfully');
           
-          if (cameraRef.current) {
-            cameraRef.current.position.z = cameraDistance * 1.5;
-            cameraRef.current.updateProjectionMatrix();
+          if (meshRef.current) {
+            sceneRef.current?.remove(meshRef.current);
           }
-        }
 
-        sceneRef.current?.add(mesh);
-        meshRef.current = mesh;
-      },
-      (xhr) => {
-        console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-      },
-      (error) => {
-        console.error('Error loading STL:', error);
-      }
-    );
+          const material = new THREE.MeshPhongMaterial({
+            color: 0x00a8ff,
+            specular: 0x111111,
+            shininess: 200,
+          });
+          const mesh = new THREE.Mesh(geometry, material);
+
+          // Center the model
+          geometry.computeBoundingBox();
+          const boundingBox = geometry.boundingBox;
+          if (boundingBox) {
+            const center = new THREE.Vector3();
+            boundingBox.getCenter(center);
+            geometry.center();
+
+            // Adjust camera to fit model
+            const size = new THREE.Vector3();
+            boundingBox.getSize(size);
+            const maxDim = Math.max(size.x, size.y, size.z);
+            const fov = cameraRef.current?.fov || 75;
+            const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+            
+            if (cameraRef.current) {
+              cameraRef.current.position.z = cameraDistance * 1.5;
+              cameraRef.current.updateProjectionMatrix();
+            }
+          }
+
+          sceneRef.current?.add(mesh);
+          meshRef.current = mesh;
+          setIsLoading(false);
+          toast.success('Model loaded successfully');
+        },
+        (xhr) => {
+          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
+        },
+        (error) => {
+          console.error('Error loading STL:', error);
+          setIsLoading(false);
+          toast.error('Failed to load model');
+        }
+      );
+    } catch (error) {
+      console.error('Error in STL loading process:', error);
+      setIsLoading(false);
+      toast.error('Failed to load model');
+    }
   }, [stlUrl]);
 
   // Handle window resize
@@ -143,7 +159,15 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return <div ref={mountRef} className="w-full h-full" />;
+  return (
+    <div ref={mountRef} className="w-full h-full relative">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+          Loading model...
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ThreeViewer;

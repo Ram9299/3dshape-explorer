@@ -7,19 +7,19 @@ import { toast } from 'sonner';
 const SAMPLE_MODELS = [
   {
     name: 'Cube',
-    url: 'https://storage.googleapis.com/ucloud-v3/ccab50f18fb14c91ccca300a.stl'
+    url: '/models/cube.stl'
   },
   {
     name: 'Sphere',
-    url: 'https://storage.googleapis.com/ucloud-v3/6cc1b1f18fb14c91ccca300a.stl'
+    url: '/models/sphere.stl'
   },
   {
     name: 'Cylinder',
-    url: 'https://storage.googleapis.com/ucloud-v3/7cc2b2f18fb14c91ccca300a.stl'
+    url: '/models/cylinder.stl'
   },
   {
     name: 'Torus',
-    url: 'https://storage.googleapis.com/ucloud-v3/8cc3b3f18fb14c91ccca300a.stl'
+    url: '/models/torus.stl'
   }
 ];
 
