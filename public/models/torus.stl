@@ -1,9 +1,37 @@
 solid torus
-  facet normal 0 0 1
+  facet normal 0.850651 0.525731 0
     outer loop
       vertex 2 0 0
-      vertex 1.866 0.5 0
-      vertex 1.866 -0.5 0
+      vertex 1.866025 0.5 0.5
+      vertex 1.866025 0.5 -0.5
+    endloop
+  endfacet
+  facet normal 0.850651 -0.525731 0
+    outer loop
+      vertex 2 0 0
+      vertex 1.866025 -0.5 -0.5
+      vertex 1.866025 -0.5 0.5
+    endloop
+  endfacet
+  facet normal 0.525731 0.850651 0
+    outer loop
+      vertex 1.5 1.732051 0
+      vertex 1.366025 1.732051 0.5
+      vertex 1.366025 1.732051 -0.5
+    endloop
+  endfacet
+  facet normal -0.525731 0.850651 0
+    outer loop
+      vertex -1.5 1.732051 0
+      vertex -1.366025 1.732051 -0.5
+      vertex -1.366025 1.732051 0.5
+    endloop
+  endfacet
+  facet normal -0.850651 0.525731 0
+    outer loop
+      vertex -2 0 0
+      vertex -1.866025 0.5 -0.5
+      vertex -1.866025 0.5 0.5
     endloop
   endfacet
 endsolid torus

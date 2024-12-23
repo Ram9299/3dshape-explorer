@@ -1,9 +1,37 @@
 solid sphere
-  facet normal 0 0 1
+  facet normal 0.850651 0.525731 0
     outer loop
-      vertex 0 0 1
-      vertex 0.707 0 0.707
-      vertex 0 0.707 0.707
+      vertex 0.850651 0.525731 0
+      vertex 0.850651 0 0.525731
+      vertex 0.850651 0 -0.525731
+    endloop
+  endfacet
+  facet normal 0.850651 -0.525731 0
+    outer loop
+      vertex 0.850651 -0.525731 0
+      vertex 0.850651 0 -0.525731
+      vertex 0.850651 0 0.525731
+    endloop
+  endfacet
+  facet normal 0.525731 0.850651 0
+    outer loop
+      vertex 0.525731 0.850651 0
+      vertex 0 0.850651 0.525731
+      vertex 0 0.850651 -0.525731
+    endloop
+  endfacet
+  facet normal -0.525731 0.850651 0
+    outer loop
+      vertex -0.525731 0.850651 0
+      vertex 0 0.850651 -0.525731
+      vertex 0 0.850651 0.525731
+    endloop
+  endfacet
+  facet normal -0.850651 0.525731 0
+    outer loop
+      vertex -0.850651 0.525731 0
+      vertex -0.850651 0 -0.525731
+      vertex -0.850651 0 0.525731
     endloop
   endfacet
 endsolid sphere
