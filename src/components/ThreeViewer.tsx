@@ -78,67 +78,60 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
     if (!stlUrl || !sceneRef.current) return;
 
     setIsLoading(true);
-    console.log('Loading STL from URL:', stlUrl);
-
     const loader = new STLLoader();
     
-    try {
-      loader.load(
-        stlUrl,
-        (geometry) => {
-          console.log('STL loaded successfully');
-          
-          if (meshRef.current) {
-            sceneRef.current?.remove(meshRef.current);
-          }
-
-          const material = new THREE.MeshPhongMaterial({
-            color: 0x00a8ff,
-            specular: 0x111111,
-            shininess: 200,
-          });
-          const mesh = new THREE.Mesh(geometry, material);
-
-          // Center the model
-          geometry.computeBoundingBox();
-          const boundingBox = geometry.boundingBox;
-          if (boundingBox) {
-            const center = new THREE.Vector3();
-            boundingBox.getCenter(center);
-            geometry.center();
-
-            // Adjust camera to fit model
-            const size = new THREE.Vector3();
-            boundingBox.getSize(size);
-            const maxDim = Math.max(size.x, size.y, size.z);
-            const fov = cameraRef.current?.fov || 75;
-            const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
-            
-            if (cameraRef.current) {
-              cameraRef.current.position.z = cameraDistance * 1.5;
-              cameraRef.current.updateProjectionMatrix();
-            }
-          }
-
-          sceneRef.current?.add(mesh);
-          meshRef.current = mesh;
-          setIsLoading(false);
-          toast.success('Model loaded successfully');
-        },
-        (xhr) => {
-          console.log((xhr.loaded / xhr.total) * 100 + '% loaded');
-        },
-        (error) => {
-          console.error('Error loading STL:', error);
-          setIsLoading(false);
-          toast.error('Failed to load model');
+    const loadModel = async () => {
+      try {
+        const response = await fetch(stlUrl);
+        if (!response.ok) throw new Error('Failed to fetch STL file');
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const geometry = loader.parse(arrayBuffer);
+        
+        if (meshRef.current) {
+          sceneRef.current?.remove(meshRef.current);
         }
-      );
-    } catch (error) {
-      console.error('Error in STL loading process:', error);
-      setIsLoading(false);
-      toast.error('Failed to load model');
-    }
+
+        const material = new THREE.MeshPhongMaterial({
+          color: 0x00a8ff,
+          specular: 0x111111,
+          shininess: 200,
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+
+        // Center the model
+        geometry.computeBoundingBox();
+        const boundingBox = geometry.boundingBox;
+        if (boundingBox) {
+          const center = new THREE.Vector3();
+          boundingBox.getCenter(center);
+          geometry.center();
+
+          // Adjust camera to fit model
+          const size = new THREE.Vector3();
+          boundingBox.getSize(size);
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const fov = cameraRef.current?.fov || 75;
+          const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+          
+          if (cameraRef.current) {
+            cameraRef.current.position.z = cameraDistance * 1.5;
+            cameraRef.current.updateProjectionMatrix();
+          }
+        }
+
+        sceneRef.current?.add(mesh);
+        meshRef.current = mesh;
+        setIsLoading(false);
+        toast.success('Model loaded successfully');
+      } catch (error) {
+        console.error('Error loading STL:', error);
+        setIsLoading(false);
+        toast.error('Failed to load model');
+      }
+    };
+
+    loadModel();
   }, [stlUrl]);
 
   // Handle window resize
