@@ -1,37 +1,100 @@
 solid torus
-  facet normal 0.850651 0.525731 0
+  facet normal 1 0 0
     outer loop
-      vertex 2 0 0
-      vertex 1.866025 0.5 0.5
-      vertex 1.866025 0.5 -0.5
+      vertex 2 0 0.5
+      vertex 2 0.5 0
+      vertex 2 0 -0.5
     endloop
   endfacet
-  facet normal 0.850651 -0.525731 0
+  facet normal 1 0 0
     outer loop
-      vertex 2 0 0
-      vertex 1.866025 -0.5 -0.5
-      vertex 1.866025 -0.5 0.5
+      vertex 2 0 0.5
+      vertex 2 0 -0.5
+      vertex 2 -0.5 0
     endloop
   endfacet
-  facet normal 0.525731 0.850651 0
+  facet normal 0.866025 0.5 0
     outer loop
+      vertex 1.732051 1 0.5
+      vertex 1.732051 1.5 0
+      vertex 1.732051 1 -0.5
+    endloop
+  endfacet
+  facet normal 0.866025 0.5 0
+    outer loop
+      vertex 1.732051 1 0.5
+      vertex 1.732051 1 -0.5
+      vertex 1.732051 0.5 0
+    endloop
+  endfacet
+  facet normal 0.5 0.866025 0
+    outer loop
+      vertex 1 1.732051 0.5
+      vertex 1 1.732051 -0.5
+      vertex 0.5 1.732051 0
+    endloop
+  endfacet
+  facet normal 0.5 0.866025 0
+    outer loop
+      vertex 1 1.732051 0.5
       vertex 1.5 1.732051 0
-      vertex 1.366025 1.732051 0.5
-      vertex 1.366025 1.732051 -0.5
+      vertex 1 1.732051 -0.5
     endloop
   endfacet
-  facet normal -0.525731 0.850651 0
+  facet normal 0 1 0
     outer loop
+      vertex 0 2 0.5
+      vertex 0.5 2 0
+      vertex 0 2 -0.5
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 0 2 0.5
+      vertex 0 2 -0.5
+      vertex -0.5 2 0
+    endloop
+  endfacet
+  facet normal -0.5 0.866025 0
+    outer loop
+      vertex -1 1.732051 0.5
+      vertex -0.5 1.732051 0
+      vertex -1 1.732051 -0.5
+    endloop
+  endfacet
+  facet normal -0.5 0.866025 0
+    outer loop
+      vertex -1 1.732051 0.5
+      vertex -1 1.732051 -0.5
       vertex -1.5 1.732051 0
-      vertex -1.366025 1.732051 -0.5
-      vertex -1.366025 1.732051 0.5
     endloop
   endfacet
-  facet normal -0.850651 0.525731 0
+  facet normal -0.866025 0.5 0
     outer loop
-      vertex -2 0 0
-      vertex -1.866025 0.5 -0.5
-      vertex -1.866025 0.5 0.5
+      vertex -1.732051 1 0.5
+      vertex -1.732051 0.5 0
+      vertex -1.732051 1 -0.5
+    endloop
+  endfacet
+  facet normal -0.866025 0.5 0
+    outer loop
+      vertex -1.732051 1 0.5
+      vertex -1.732051 1 -0.5
+      vertex -1.732051 1.5 0
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex -2 0 0.5
+      vertex -2 -0.5 0
+      vertex -2 0 -0.5
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex -2 0 0.5
+      vertex -2 0 -0.5
+      vertex -2 0.5 0
     endloop
   endfacet
 endsolid torus

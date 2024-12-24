@@ -1,37 +1,86 @@
 solid sphere
-  facet normal 0.850651 0.525731 0
+  facet normal 0 0 1
     outer loop
-      vertex 0.850651 0.525731 0
-      vertex 0.850651 0 0.525731
-      vertex 0.850651 0 -0.525731
+      vertex 0 0 1
+      vertex 0.866025 0.5 1
+      vertex 0.866025 -0.5 1
     endloop
   endfacet
-  facet normal 0.850651 -0.525731 0
+  facet normal 0 0 1
     outer loop
-      vertex 0.850651 -0.525731 0
-      vertex 0.850651 0 -0.525731
-      vertex 0.850651 0 0.525731
+      vertex 0 0 1
+      vertex 0.866025 -0.5 1
+      vertex 0 -1 1
     endloop
   endfacet
-  facet normal 0.525731 0.850651 0
+  facet normal 0 0 1
     outer loop
-      vertex 0.525731 0.850651 0
-      vertex 0 0.850651 0.525731
-      vertex 0 0.850651 -0.525731
+      vertex 0 0 1
+      vertex 0 -1 1
+      vertex -0.866025 -0.5 1
     endloop
   endfacet
-  facet normal -0.525731 0.850651 0
+  facet normal 0 0 1
     outer loop
-      vertex -0.525731 0.850651 0
-      vertex 0 0.850651 -0.525731
-      vertex 0 0.850651 0.525731
+      vertex 0 0 1
+      vertex -0.866025 -0.5 1
+      vertex -0.866025 0.5 1
     endloop
   endfacet
-  facet normal -0.850651 0.525731 0
+  facet normal 0 0 1
     outer loop
-      vertex -0.850651 0.525731 0
-      vertex -0.850651 0 -0.525731
-      vertex -0.850651 0 0.525731
+      vertex 0 0 1
+      vertex -0.866025 0.5 1
+      vertex 0 1 1
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 0 0 1
+      vertex 0 1 1
+      vertex 0.866025 0.5 1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex 0.866025 -0.5 -1
+      vertex 0.866025 0.5 -1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex 0 -1 -1
+      vertex 0.866025 -0.5 -1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex -0.866025 -0.5 -1
+      vertex 0 -1 -1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex -0.866025 0.5 -1
+      vertex -0.866025 -0.5 -1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex 0 1 -1
+      vertex -0.866025 0.5 -1
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 0 0 -1
+      vertex 0.866025 0.5 -1
+      vertex 0 1 -1
     endloop
   endfacet
 endsolid sphere
