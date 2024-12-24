@@ -77,54 +77,29 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
   useEffect(() => {
     if (!stlUrl || !sceneRef.current) return;
 
+    setIsLoading(true);
+    const loader = new STLLoader();
+    
     const loadModel = async () => {
-      setIsLoading(true);
-      console.log('Loading STL from URL:', stlUrl);
-
       try {
-        // Clear existing mesh
+        const response = await fetch(stlUrl);
+        if (!response.ok) throw new Error('Failed to fetch STL file');
+        
+        const arrayBuffer = await response.arrayBuffer();
+        const geometry = loader.parse(arrayBuffer);
+        
         if (meshRef.current) {
           sceneRef.current?.remove(meshRef.current);
-          meshRef.current.geometry.dispose();
-          (meshRef.current.material as THREE.Material).dispose();
         }
-
-        const loader = new STLLoader();
-        
-        // Handle both local and uploaded files
-        const geometry = await new Promise<THREE.BufferGeometry>((resolve, reject) => {
-          if (stlUrl.startsWith('blob:')) {
-            // For uploaded files
-            loader.load(
-              stlUrl,
-              (geometry) => resolve(geometry),
-              undefined,
-              (error) => reject(error)
-            );
-          } else {
-            // For sample models
-            fetch(stlUrl)
-              .then(response => {
-                if (!response.ok) throw new Error('Failed to fetch STL file');
-                return response.arrayBuffer();
-              })
-              .then(buffer => {
-                const geometry = loader.parse(buffer);
-                resolve(geometry);
-              })
-              .catch(error => reject(error));
-          }
-        });
 
         const material = new THREE.MeshPhongMaterial({
           color: 0x00a8ff,
           specular: 0x111111,
           shininess: 200,
         });
-
         const mesh = new THREE.Mesh(geometry, material);
 
-        // Center and scale the model
+        // Center the model
         geometry.computeBoundingBox();
         const boundingBox = geometry.boundingBox;
         if (boundingBox) {
@@ -132,32 +107,27 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
           boundingBox.getCenter(center);
           geometry.center();
 
-          // Auto-scale the model to fit the view
+          // Adjust camera to fit model
           const size = new THREE.Vector3();
           boundingBox.getSize(size);
           const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 2 / maxDim; // Scale to fit in a 2 unit sphere
-          mesh.scale.set(scale, scale, scale);
-
-          // Adjust camera to fit model
+          const fov = cameraRef.current?.fov || 75;
+          const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+          
           if (cameraRef.current) {
-            const fov = cameraRef.current.fov;
-            const cameraDistance = (maxDim * 1.5) / Math.tan((fov * Math.PI) / 360);
-            cameraRef.current.position.z = cameraDistance;
+            cameraRef.current.position.z = cameraDistance * 1.5;
             cameraRef.current.updateProjectionMatrix();
           }
         }
 
         sceneRef.current?.add(mesh);
         meshRef.current = mesh;
-        
-        console.log('Model loaded successfully');
         setIsLoading(false);
         toast.success('Model loaded successfully');
       } catch (error) {
         console.error('Error loading STL:', error);
         setIsLoading(false);
-        toast.error('Failed to load model. Please check if the file is a valid STL.');
+        toast.error('Failed to load model');
       }
     };
 
