@@ -12,14 +12,6 @@ const SAMPLE_MODELS = [
   {
     name: 'Sphere',
     url: '/models/sphere.stl'
-  },
-  {
-    name: 'Cylinder',
-    url: '/models/cylinder.stl'
-  },
-  {
-    name: 'Torus',
-    url: '/models/torus.stl'
   }
 ];
 
