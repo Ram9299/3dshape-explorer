@@ -69,7 +69,7 @@ const Index = () => {
 
           {/* 3D Viewer */}
           <div className="lg:col-span-3 bg-card rounded-lg" style={{ height: '80vh' }}>
-            <ThreeViewer stlUrl={selectedModel} />
+            <ThreeViewer modelUrl={selectedModel} />
           </div>
         </div>
       </div>
