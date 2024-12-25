@@ -14,7 +14,7 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ modelUrl }) => {
     meshRef,
   } = useThreeScene();
 
-  const { isLoading } = useModelLoader({
+  const { isLoading, error } = useModelLoader({
     modelUrl,
     sceneRef,
     cameraRef,
@@ -26,6 +26,11 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ modelUrl }) => {
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
           Loading model...
+        </div>
+      )}
+      {error && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-white">
+          Error loading model: {error}
         </div>
       )}
     </div>

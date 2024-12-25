@@ -21,9 +21,15 @@ const Index = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (!file.name.toLowerCase().endsWith('.stl')) {
+        toast.error('Please upload an STL file');
+        return;
+      }
+
+      console.log('File selected:', file.name, 'Size:', file.size);
       const url = URL.createObjectURL(file);
       setSelectedModel(url);
-      toast.success('Model loaded successfully!');
+      toast.success('File selected successfully');
     }
   };
 
