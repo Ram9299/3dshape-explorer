@@ -5,10 +5,21 @@ import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { toast } from 'sonner';
 
 interface ThreeViewerProps {
-  stlUrl?: string;
+  modelUrl?: string;
 }
 
-const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
+interface OptimizedMesh {
+  format: string;
+  version: number;
+  levels: {
+    vertices: number[][];
+    faces: number[][];
+    normals: number[][];
+    detail: number;
+  }[];
+}
+
+const ThreeViewer: React.FC<ThreeViewerProps> = ({ modelUrl }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<THREE.Scene>();
   const cameraRef = useRef<THREE.PerspectiveCamera>();
@@ -16,98 +27,197 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
   const controlsRef = useRef<OrbitControls>();
   const meshRef = useRef<THREE.Mesh>();
   const [isLoading, setIsLoading] = useState(false);
+  const [currentLOD, setCurrentLOD] = useState(0);
 
-  useEffect(() => {
-    if (!mountRef.current) return;
+  // Scene setup
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color('#1a1a1a');
+  sceneRef.current = scene;
 
-    // Scene setup
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color('#1a1a1a');
-    sceneRef.current = scene;
+  // Camera setup
+  const camera = new THREE.PerspectiveCamera(
+    75,
+    mountRef.current.clientWidth / mountRef.current.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.z = 5;
+  cameraRef.current = camera;
 
-    // Camera setup
-    const camera = new THREE.PerspectiveCamera(
-      75,
-      mountRef.current.clientWidth / mountRef.current.clientHeight,
-      0.1,
-      1000
-    );
-    camera.position.z = 5;
-    cameraRef.current = camera;
+  // Renderer setup
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
+  mountRef.current.appendChild(renderer.domElement);
+  rendererRef.current = renderer;
 
-    // Renderer setup
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    mountRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+  // Controls setup
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.05;
+  controls.enableZoom = true;
+  controlsRef.current = controls;
 
-    // Controls setup
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.enableZoom = true;
-    controlsRef.current = controls;
+  // Lighting
+  const ambientLight = new THREE.AmbientLight(0x404040, 2);
+  scene.add(ambientLight);
 
-    // Lighting
-    const ambientLight = new THREE.AmbientLight(0x404040, 2);
-    scene.add(ambientLight);
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+  directionalLight.position.set(1, 1, 1);
+  scene.add(directionalLight);
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
-    directionalLight.position.set(1, 1, 1);
-    scene.add(directionalLight);
+  // Animation loop
+  const animate = () => {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  };
+  animate();
 
-    // Animation loop
-    const animate = () => {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    };
-    animate();
+  // Cleanup
+  return () => {
+    renderer.dispose();
+    if (mountRef.current?.contains(renderer.domElement)) {
+      mountRef.current.removeChild(renderer.domElement);
+    }
+  };
 
-    // Cleanup
-    return () => {
-      renderer.dispose();
-      if (mountRef.current?.contains(renderer.domElement)) {
-        mountRef.current.removeChild(renderer.domElement);
+  const loadOptimizedModel = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch model');
+      
+      const data: OptimizedMesh = await response.json();
+      if (data.format !== 'optimized-mesh') {
+        throw new Error('Invalid format');
       }
-    };
-  }, []);
+      
+      // Start with highest detail level
+      const level = data.levels[0];
+      
+      // Create geometry
+      const geometry = new THREE.BufferGeometry();
+      
+      // Set vertices
+      const vertices = new Float32Array(level.vertices.flat());
+      geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+      
+      // Set faces
+      const indices = new Uint32Array(level.faces.flat());
+      geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+      
+      // Set normals
+      const normals = new Float32Array(level.normals.flat());
+      geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+      
+      // Create mesh
+      const material = new THREE.MeshPhongMaterial({
+        color: 0x00a8ff,
+        specular: 0x111111,
+        shininess: 200,
+      });
+      
+      if (meshRef.current) {
+        sceneRef.current?.remove(meshRef.current);
+      }
+      
+      const mesh = new THREE.Mesh(geometry, material);
+      sceneRef.current?.add(mesh);
+      meshRef.current = mesh;
+      
+      // Center and scale model
+      geometry.computeBoundingBox();
+      const boundingBox = geometry.boundingBox;
+      if (boundingBox) {
+        geometry.center();
+        const size = new THREE.Vector3();
+        boundingBox.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const fov = cameraRef.current?.fov || 75;
+        const cameraDistance = maxDim / (2 * Math.tan((fov * Math.PI) / 360));
+        
+        if (cameraRef.current) {
+          cameraRef.current.position.z = cameraDistance * 1.5;
+          cameraRef.current.updateProjectionMatrix();
+        }
+      }
+      
+      setIsLoading(false);
+      toast.success('Model loaded successfully');
+      
+      // Add LOD control based on camera distance
+      if (controlsRef.current) {
+        controlsRef.current.addEventListener('change', () => {
+          if (!cameraRef.current || !meshRef.current) return;
+          
+          const distance = cameraRef.current.position.distanceTo(meshRef.current.position);
+          const maxDistance = cameraDistance * 2;
+          const lodIndex = Math.min(
+            Math.floor((distance / maxDistance) * data.levels.length),
+            data.levels.length - 1
+          );
+          
+          if (lodIndex !== currentLOD) {
+            setCurrentLOD(lodIndex);
+            updateLOD(data.levels[lodIndex]);
+          }
+        });
+      }
+      
+    } catch (error) {
+      console.error('Error loading model:', error);
+      setIsLoading(false);
+      toast.error('Failed to load model');
+    }
+  };
+  
+  const updateLOD = (level: OptimizedMesh['levels'][0]) => {
+    if (!meshRef.current) return;
+    
+    const geometry = meshRef.current.geometry;
+    
+    // Update geometry with new LOD data
+    const vertices = new Float32Array(level.vertices.flat());
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    
+    const indices = new Uint32Array(level.faces.flat());
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+    
+    const normals = new Float32Array(level.normals.flat());
+    geometry.setAttribute('normal', new THREE.BufferAttribute(normals, 3));
+    
+    geometry.computeBoundingSphere();
+  };
 
-  // Load STL file when URL changes
+  // Load model when URL changes
   useEffect(() => {
-    if (!stlUrl || !sceneRef.current) return;
+    if (!modelUrl || !sceneRef.current) return;
 
     setIsLoading(true);
-    const loader = new STLLoader();
     
-    const loadModel = async () => {
-      try {
-        const response = await fetch(stlUrl);
-        if (!response.ok) throw new Error('Failed to fetch STL file');
-        
-        const arrayBuffer = await response.arrayBuffer();
-        const geometry = loader.parse(arrayBuffer);
-        
-        if (meshRef.current) {
-          sceneRef.current?.remove(meshRef.current);
-        }
-
+    if (modelUrl.endsWith('.json')) {
+      loadOptimizedModel(modelUrl);
+    } else {
+      const loader = new STLLoader();
+      loader.load(modelUrl, (geometry) => {
         const material = new THREE.MeshPhongMaterial({
           color: 0x00a8ff,
           specular: 0x111111,
           shininess: 200,
         });
+        
+        if (meshRef.current) {
+          sceneRef.current?.remove(meshRef.current);
+        }
+        
         const mesh = new THREE.Mesh(geometry, material);
-
-        // Center the model
+        sceneRef.current?.add(mesh);
+        meshRef.current = mesh;
+        
+        // Center and scale model
         geometry.computeBoundingBox();
         const boundingBox = geometry.boundingBox;
         if (boundingBox) {
-          const center = new THREE.Vector3();
-          boundingBox.getCenter(center);
           geometry.center();
-
-          // Adjust camera to fit model
           const size = new THREE.Vector3();
           boundingBox.getSize(size);
           const maxDim = Math.max(size.x, size.y, size.z);
@@ -119,20 +229,16 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ stlUrl }) => {
             cameraRef.current.updateProjectionMatrix();
           }
         }
-
-        sceneRef.current?.add(mesh);
-        meshRef.current = mesh;
+        
         setIsLoading(false);
         toast.success('Model loaded successfully');
-      } catch (error) {
+      }, undefined, (error) => {
         console.error('Error loading STL:', error);
         setIsLoading(false);
         toast.error('Failed to load model');
-      }
-    };
-
-    loadModel();
-  }, [stlUrl]);
+      });
+    }
+  }, [modelUrl]);
 
   // Handle window resize
   useEffect(() => {
